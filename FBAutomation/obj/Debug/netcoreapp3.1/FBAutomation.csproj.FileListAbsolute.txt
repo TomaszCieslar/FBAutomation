@@ -1,0 +1,16 @@
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.exe
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.csprojAssemblyReference.cache
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.AssemblyInfoInputs.cache
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.AssemblyInfo.cs
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.deps.json
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.runtimeconfig.json
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.runtimeconfig.dev.json
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.dll
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\FBAutomation.pdb
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\WebDriver.dll
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.csproj.CoreCompileInputs.cache
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.csproj.CopyComplete
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.dll
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.pdb
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.genruntimeconfig.cache
