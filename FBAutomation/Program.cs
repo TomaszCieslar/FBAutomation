@@ -10,23 +10,22 @@ namespace FBAutomation
     {
         static void Main(string[] args)
         {
-            InitiateAutomation();
+            Automation automation = new Automation();
 
-           // IWebDriver driver = new ChromeDriver(Directory.GetCurrentDirectory());
-           // driver.Url = "https://www.facebook.com/groups/2143039459260122/members/";
-           
+            automation.KillExistingProcesses();
 
+            automation.SettingParameters();
+
+            // automation.RunAutomation();
+
+            automation.SendInformation();
+
+            // klasa grupa
+
+            // dodanie do tablicy
+      
         }
 
-        static void InitiateAutomation()
-        {
-            //Kill Processes
-            Process[] chromedriverProcesses = Process.GetProcessesByName("chromedriver");
-            foreach (var process in chromedriverProcesses)
-
-            {
-                Console.WriteLine(process.ProcessName);
-            }
-        }
+       
     }
 }
