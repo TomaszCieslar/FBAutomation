@@ -18,7 +18,7 @@ namespace FBAutomation
 
             // automation.RunAutomation();
 
-            automation.SendInformation();
+           automation.SendInformation();
 
             // klasa grupa
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FBAutomation
+namespace FBAutomation.Models
 {
     public class Assigment
     {

@@ -1,4 +1,7 @@
-﻿using OpenQA.Selenium;
+﻿using FBAutomation.DAL;
+using FBAutomation.Models;
+using Microsoft.EntityFrameworkCore;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
 using System;
@@ -15,6 +18,7 @@ namespace FBAutomation
     {
         IWebDriver driver;
         ChromeOptions option;
+        String GroupID = "2143039459260122";
 
         public void KillExistingProcesses()
         {
@@ -48,7 +52,22 @@ namespace FBAutomation
             driver = new ChromeDriver(Directory.GetCurrentDirectory(),option);
 
             driver.Url = "https://www.facebook.com/groups/2143039459260122/members/";
+
+            //using (var context = new FBContext())
+            //{
+            //    Group group = new Group();
+            //    group.GroupName = "Nauka programowania wśród dzieci i młodzieży";
+            //    group.FbGroupID = GroupID;
+
+            //    context.Groups.Add(group);
+            //    context.SaveChanges();
+            //}
+
             
+
+
+
+
             IWebElement NumberOfUsers = driver.FindElement(By.XPath("//*[@id='groupsMemberBrowser']/div[1]/div/div[1]/span"));
             IWebElement listOfUsers;
             IWebElement listOfAdditionalUsers;
@@ -91,10 +110,43 @@ namespace FBAutomation
                     var id = idValue.Substring(start, idValue.IndexOf("&ref=") - start);
                     Console.WriteLine(index + " " + FirstName + " " + LastName + " " + id);
 
-                    User user = new User();
-                    user.FirstName = FirstName;
-                    user.LastName = LastName;
-                    user.FbID = id;
+
+                    using (var context = new FBContext())
+                    {
+                        User user = new User();
+                        user.FirstName = FirstName;
+                        user.LastName = LastName;
+                        user.FbID = id;
+
+                        //Assigment assigment = new Assigment();
+                        //assigment.GroupID = 2;
+                        //assigment.UserID = user.ID;
+
+                        if (context.Users.Any(e => e.FbID == id))
+                        {
+                            context.Entry(user).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            context.Entry(user).State = EntityState.Added;
+                        }
+
+
+                        //if (context.Assigments.Any(e => e.UserID == user.ID))
+                        //{
+                        //    context.Entry(assigment).State = EntityState.Modified;
+                        //}
+                        //else
+                        //{
+                        //    context.Entry(assigment).State = EntityState.Added;
+                        //}
+
+
+
+
+                        context.SaveChanges();
+                    }
+                    
 
                
                 }
@@ -115,39 +167,38 @@ namespace FBAutomation
         public void SendInformation()
         {
 
-            string idUsera = "100001558372527";
-            //            6 Kamila Kamińska 100001558372527
-            //7 Kris Gontarek 693506551
-            //8 Anna Świć 100004371964825
-            //9 Marcin Joka 100001151982839
-            //13 Basia Skowron 100005318172794
-            //14 Dorota J-ka 100047367904924
-            //
+            var context = new FBContext();
+
             driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
 
-            driver.Url = "https://www.facebook.com/messages/t/" + idUsera;
 
+           // var users = context.Users.Take(10);
+            List<User> users = context.Users.Take(10).ToList();
 
-           
+            foreach (var user in users)
+            {
+                driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
                 IWebElement communication = driver.FindElement(By.XPath("//*[@id='js_18']/div/div/div"));
                 IList<IWebElement> conversation = communication.FindElements(By.TagName("span"));
-            try
-            {
-                foreach (var message in conversation)
+                try
                 {
-                    if (!String.IsNullOrEmpty(message.Text))
+                    foreach (var message in conversation)
                     {
-                        Console.WriteLine(message.Text);
+                        if (!String.IsNullOrEmpty(message.Text))
+                        {
+                            Console.WriteLine(message.Text);
+                        }
+
                     }
+                }
+                catch (Exception)
+                {
+
 
                 }
             }
-            catch (Exception)
-            {
 
-               
-            }
-         
+            driver.Quit();
 
         }
     }
