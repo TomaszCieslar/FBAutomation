@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +12,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using TextCopy;
 
 namespace FBAutomation
 {
@@ -117,6 +120,9 @@ namespace FBAutomation
                         user.FirstName = FirstName;
                         user.LastName = LastName;
                         user.FbID = id;
+                        user.ContactInitiated = false;
+                        user.PageLiked = false;
+                        user.IsFriend = false;
 
                         //Assigment assigment = new Assigment();
                         //assigment.GroupID = 2;
@@ -163,8 +169,7 @@ namespace FBAutomation
             driver.Quit();
 
         }
-
-        public void SendInformation()
+        public void GroupReview()
         {
 
             var context = new FBContext();
@@ -173,33 +178,150 @@ namespace FBAutomation
 
 
            // var users = context.Users.Take(10);
-            List<User> users = context.Users.Take(10).ToList();
+            List<User> users = context.Users.Where(u => u.ContactInitiated == false).Take(30).ToList(); 
 
             foreach (var user in users)
             {
-                driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
-                IWebElement communication = driver.FindElement(By.XPath("//*[@id='js_18']/div/div/div"));
-                IList<IWebElement> conversation = communication.FindElements(By.TagName("span"));
                 try
                 {
+                    WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                    driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
+
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                    IWebElement communication= driver.FindElement(By.XPath("//*[@id='js_1']"));
+
+                    
+                    //wait until all component will be visible
+                    
+                    IList<IWebElement> conversation = communication.FindElements(By.TagName("span"));
+                    StringBuilder conversationText = new StringBuilder();
                     foreach (var message in conversation)
                     {
                         if (!String.IsNullOrEmpty(message.Text))
                         {
-                            Console.WriteLine(message.Text);
+                            conversationText.Append(message.Text);
+
                         }
 
                     }
+                    //Console.WriteLine(conversationText.ToString());
+                    if (conversationText.ToString().Contains("myślę że mogą Ci się przydać te darmowe materiały"))
+                    {
+                        user.ContactInitiated = true;
+                        Console.WriteLine(user.FirstName + user.LastName + " - Contact initiated");
+                        context.SaveChanges();
+                    }
                 }
-                catch (Exception)
+                catch (Exception) 
                 {
-
+                    Console.WriteLine("Empty conversation");
 
                 }
             }
 
-            driver.Quit();
+            
 
         }
+        public void SendInformation()
+        {
+
+
+            var context = new FBContext();
+
+            driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
+
+            List<User> users = context.Users.Where(u => u.ContactInitiated == false).Take(20).ToList();
+
+            foreach (var user in users)
+            {
+                
+
+                driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                string message = "Cześć " + user.FirstName + Environment.NewLine+
+                "myślę że mogą Ci się przydać te darmowe materiały." + Environment.NewLine +
+                Environment.NewLine +
+                "Na stronie" + Environment.NewLine +
+                "https://www.facebook.com/szkolamlodegoprogramisty/" + Environment.NewLine +
+                Environment.NewLine +
+                "przygotowuję DARMOWE ćwiczenia i kursy dla dzieci z programowania do rozwiązywania i " + Environment.NewLine +
+                "przejścia w domu" + Environment.NewLine +
+                Environment.NewLine +
+                "DARMOWY Kurs SCRATCH(6 +)(ponad 1000 osób się zapisało) i PYTHON(9 +)(ponad 800)" + Environment.NewLine +
+                "https://szkolamlodegoprogramisty.pl/kursy/" + Environment.NewLine +
+                Environment.NewLine +
+                "A w między czasie zapraszam na blog" + Environment.NewLine +
+                "https://szkolamlodegoprogramisty.pl/" + Environment.NewLine +
+                Environment.NewLine +
+                "Pozdrawiam" + Environment.NewLine +
+                "Tomek";
+
+                try
+                {
+                    string alert = driver.SwitchTo().Alert().Text;
+                    driver.SwitchTo().Alert().Accept();
+                    Console.WriteLine(alert);
+                }
+                catch
+                {
+                    Console.WriteLine("Brak alertow");
+                }
+                
+                    IWebElement communication = driver.FindElement(By.CssSelector("div[data-offset-key]"));
+                    driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                    var clipboard = new Clipboard();
+                    clipboard.SetText(message);
+                    communication.SendKeys(Keys.Control + "v");
+
+                Thread.Sleep(5000);
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                IWebElement submitElement = driver.FindElement(By.XPath("//div//a[@aria-label='Wyślij']"));
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                submitElement.Click();
+
+
+                user.ContactInitiated = true;
+                context.SaveChanges();
+
+               
+
+            }
+
+            driver.Quit();
+        }
+
+       public void GroupPeopleWhoLikePageAnalisys()
+        {
+
+            driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
+
+            driver.Url = "https://www.facebook.com/szkolamlodegoprogramisty/settings/?tab=people_and_other_pages&ref=page_edit";
+
+            IWebElement ListOfFuns = driver.FindElement(By.XPath("//*[@id='u_0_u']/div/div/div/div[3]/div/div[2]/table/tbody"));
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+            IList<IWebElement> record;
+
+            record = ListOfFuns.FindElements(By.TagName("tr"));
+
+        }
+
+        public void AddToFriend()
+        {
+
+            driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
+
+            driver.Url = "https://www.facebook.com/groups/503657533808113/members/";
+
+            //IWebElement ListOfFuns = driver.FindElement(By.XPath("//*[@id='u_0_u']/div/div/div/div[3]/div/div[2]/table/tbody"));
+            //driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+            //IList<IWebElement> record;
+
+            //record = ListOfFuns.FindElements(By.TagName("tr"));
+
+        }
+
     }
 }

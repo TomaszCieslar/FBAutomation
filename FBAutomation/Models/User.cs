@@ -10,6 +10,12 @@ namespace FBAutomation.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
+        public Boolean ContactInitiated { get; set; }
+
+        public Boolean PageLiked { get; set; }
+
+        public Boolean IsFriend { get; set; }
+
         public string FbID { get; set; }
 
         public virtual ICollection<Assigment> Assigments { get; set; }

@@ -48,3 +48,4 @@ C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1
 C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
 C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.Design.dll
 C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\obj\Debug\netcoreapp3.1\FBAutomation.csproj.CoreCompileInputs.cache
+C:\Users\tcieslar\source\repos\FBAutomation\FBAutomation\bin\Debug\netcoreapp3.1\TextCopy.dll

@@ -2,7 +2,7 @@
 
 namespace FBAutomation.Migrations
 {
-    public partial class CreateFaceBookDB : Migration
+    public partial class CreateDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

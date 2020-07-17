@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FBAutomation.Migrations
 {
     [DbContext(typeof(FBContext))]
-    [Migration("20200621140153_CreateFaceBookDB")]
-    partial class CreateFaceBookDB
+    [Migration("20200622031857_IsFriend")]
+    partial class IsFriend
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,14 +67,23 @@ namespace FBAutomation.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<bool>("ContactInitiated")
+                        .HasColumnType("bit");
+
                     b.Property<string>("FbID")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsFriend")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PageLiked")
+                        .HasColumnType("bit");
 
                     b.HasKey("ID");
 

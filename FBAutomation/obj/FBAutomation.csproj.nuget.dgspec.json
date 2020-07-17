@@ -55,6 +55,10 @@
             "Selenium.WebDriver": {
               "target": "Package",
               "version": "[3.141.0, )"
+            },
+            "TextCopy": {
+              "target": "Package",
+              "version": "[4.2.0, )"
             }
           },
           "imports": [
