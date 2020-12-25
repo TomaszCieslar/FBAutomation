@@ -14,6 +14,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using TextCopy;
+using System.Configuration;
 
 namespace FBAutomation
 {
@@ -22,6 +23,12 @@ namespace FBAutomation
         IWebDriver driver;
         ChromeOptions option;
         String GroupID = "2143039459260122";
+        string FirstName = "";
+        string LastName = "";
+        string id = "";
+        int index = 0;
+        IWebElement listOfUsers;
+
 
         public void KillExistingProcesses()
         {
@@ -54,39 +61,35 @@ namespace FBAutomation
         {
             driver = new ChromeDriver(Directory.GetCurrentDirectory(),option);
 
-            driver.Url = "https://www.facebook.com/groups/2143039459260122/members/";
+            driver.Url = ConfigurationManager.AppSettings["GroupPage"];
 
-            //using (var context = new FBContext())
-            //{
-            //    Group group = new Group();
-            //    group.GroupName = "Nauka programowania wśród dzieci i młodzieży";
-            //    group.FbGroupID = GroupID;
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(20);
+            IList<IWebElement> allElements = driver.FindElements(By.XPath(".//span"));
 
-            //    context.Groups.Add(group);
-            //    context.SaveChanges();
-            //}
+
+            string value = driver.FindElement(By.XPath(".//span[contains(text(), 'Członkowie: ')]")).Text;
+            value = value.Substring(value.Length - 4, 4);
 
             
-
-
-
-
-            IWebElement NumberOfUsers = driver.FindElement(By.XPath("//*[@id='groupsMemberBrowser']/div[1]/div/div[1]/span"));
-            IWebElement listOfUsers;
-            IWebElement listOfAdditionalUsers;
             IList<IWebElement> record;
 
             listOfUsers = driver.FindElement(By.TagName("div"));
-            record = listOfUsers.FindElements(By.CssSelector("div[class='clearfix _60rh _gse']"));
+            record = listOfUsers.FindElements(By.CssSelector("div[data-visualcompletion='ignore-dynamic']"));
 
-            int index = 0;
-            int numberOfRecords = Convert.ToInt32(NumberOfUsers.Text);
+            int numberOfRecords = Convert.ToInt32(value);
+
+           
+
             do
             {
                 try
                 {
-                    listOfAdditionalUsers = driver.FindElement(By.CssSelector("div[class='fbProfileBrowserList expandedList']"));
-                    record = listOfUsers.FindElements(By.CssSelector("div[class='clearfix _60rh _gse']"));
+                    
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    js.ExecuteScript("window.scrollBy(0,document.body.scrollHeight)");
+
+                    record = listOfUsers.FindElements(By.TagName("div[data-visualcompletion='ignore-dynamic']"));
+                    
                 }
                catch
                 {
@@ -97,73 +100,65 @@ namespace FBAutomation
                 Actions hover = new Actions(driver);
                 IWebElement person = record[index];
 
-                //Action go to element
                 hover.MoveToElement(person);
                 hover.Perform();
-
+                
                 try
                 {
-                    string nameValue = person.FindElement(By.CssSelector("a[title]")).GetAttribute("title");
-                    string idValue = person.FindElement(By.CssSelector("a[title]")).GetAttribute("ajaxify");
+                    string nameValue = person.FindElement(By.CssSelector("a")).GetAttribute("aria-label");
+                    string idValue = person.FindElement(By.CssSelector("a")).GetAttribute("href");
 
-                    string FirstName = nameValue.Substring(0, nameValue.IndexOf(" "));
-                    string LastName = nameValue.Substring(nameValue.IndexOf(" ") + 1, (nameValue.Length - FirstName.Length - 1));
-
-                    var start = idValue.IndexOf("member_id=") + 10;
-                    var id = idValue.Substring(start, idValue.IndexOf("&ref=") - start);
-                    Console.WriteLine(index + " " + FirstName + " " + LastName + " " + id);
-
-
-                    using (var context = new FBContext())
+                    if (!string.IsNullOrEmpty(nameValue))
                     {
-                        User user = new User();
-                        user.FirstName = FirstName;
-                        user.LastName = LastName;
-                        user.FbID = id;
-                        user.ContactInitiated = false;
-                        user.PageLiked = false;
-                        user.IsFriend = false;
-
-                        //Assigment assigment = new Assigment();
-                        //assigment.GroupID = 2;
-                        //assigment.UserID = user.ID;
-
-                        if (context.Users.Any(e => e.FbID == id))
-                        {
-                            context.Entry(user).State = EntityState.Modified;
-                        }
-                        else
-                        {
-                            context.Entry(user).State = EntityState.Added;
-                        }
-
-
-                        //if (context.Assigments.Any(e => e.UserID == user.ID))
-                        //{
-                        //    context.Entry(assigment).State = EntityState.Modified;
-                        //}
-                        //else
-                        //{
-                        //    context.Entry(assigment).State = EntityState.Added;
-                        //}
-
-
-
-
-                        context.SaveChanges();
+                        FirstName = nameValue.Substring(0, nameValue.IndexOf(" "));
+                        LastName = nameValue.Substring(nameValue.IndexOf(" ") + 1, (nameValue.Length - FirstName.Length - 1));
+                        Console.WriteLine(index + " " + FirstName + " " + LastName);
                     }
-                    
+
+                    if (!string.IsNullOrEmpty(idValue))
+                    {
+                        var start = idValue.IndexOf("user") + 5;
+                        id = idValue.Substring(start, idValue.Length - start - 1);
+                    }
+
+                    if (!string.IsNullOrEmpty(nameValue) && !string.IsNullOrEmpty(idValue))
+                    {
+                        using (var context = new FBContext())
+                        {
+                            User user = new User();
+                            user.FirstName = FirstName;
+                            user.LastName = LastName;
+                            user.FbID = id;
+                            user.ContactInitiated = false;
+                            user.PageLiked = false;
+                            user.IsFriend = false;
+                            user.SharedInfo = false;
+
+
+
+                            if (context.Users.Any(e => e.FbID == id))
+                            {
+                                context.Entry(user).State = EntityState.Modified;
+                            }
+                            else
+                            {
+                                context.Entry(user).State = EntityState.Added;
+                            }
+                            context.SaveChanges();
+                        }
+                    }
 
                
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
 
-   
-                }
+                   // Console.WriteLine(ex.ToString());          
+            }
 
 
                 index++;
+
             } while (index<numberOfRecords);
 
             driver.Quit();
@@ -177,24 +172,20 @@ namespace FBAutomation
             driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
 
 
-           // var users = context.Users.Take(10);
-            List<User> users = context.Users.Where(u => u.ContactInitiated == false).Take(30).ToList(); 
+            List<User> users = context.Users.Where(u => u.ContactInitiated == false).Take(300).ToList(); 
 
             foreach (var user in users)
             {
                 try
                 {
                     WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                    driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
+                    driver.Url = ConfigurationManager.AppSettings["UserMessage"]+  user.FbID;
 
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
-                    IWebElement communication= driver.FindElement(By.XPath("//*[@id='js_1']"));
-
                     
-                    //wait until all component will be visible
                     
-                    IList<IWebElement> conversation = communication.FindElements(By.TagName("span"));
+                    IList<IWebElement> conversation = driver.FindElements(By.CssSelector("div[class='ljqsnud1']"));;
                     StringBuilder conversationText = new StringBuilder();
                     foreach (var message in conversation)
                     {
@@ -205,7 +196,6 @@ namespace FBAutomation
                         }
 
                     }
-                    //Console.WriteLine(conversationText.ToString());
                     if (conversationText.ToString().Contains("myślę że mogą Ci się przydać te darmowe materiały"))
                     {
                         user.ContactInitiated = true;
@@ -237,7 +227,7 @@ namespace FBAutomation
             {
                 
 
-                driver.Url = "https://www.facebook.com/messages/t/" + user.FbID;
+                driver.Url = ConfigurationManager.AppSettings["UserMessage"] + user.FbID;
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
                 string message = "Cześć " + user.FirstName + Environment.NewLine+
@@ -257,7 +247,7 @@ namespace FBAutomation
                 Environment.NewLine +
                 "Pozdrawiam" + Environment.NewLine +
                 "Tomek";
-
+                Thread.Sleep(5000);
                 try
                 {
                     string alert = driver.SwitchTo().Alert().Text;
@@ -268,8 +258,7 @@ namespace FBAutomation
                 {
                     Console.WriteLine("Brak alertow");
                 }
-                
-                    IWebElement communication = driver.FindElement(By.CssSelector("div[data-offset-key]"));
+                IWebElement communication = driver.FindElement(By.CssSelector("div[class='_1mf _1mj']"));
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
                     var clipboard = new Clipboard();
@@ -277,15 +266,15 @@ namespace FBAutomation
                     communication.SendKeys(Keys.Control + "v");
 
                 Thread.Sleep(5000);
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-                IWebElement submitElement = driver.FindElement(By.XPath("//div//a[@aria-label='Wyślij']"));
-                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-                submitElement.Click();
+                communication.SendKeys(Keys.Enter);
 
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
+               
                 user.ContactInitiated = true;
                 context.SaveChanges();
 
+                Console.WriteLine("kontakt nawiazany:" + user.FirstName + " " + user.LastName);
                
 
             }
@@ -295,32 +284,171 @@ namespace FBAutomation
 
        public void GroupPeopleWhoLikePageAnalisys()
         {
+            IList<IWebElement> listOfUsers;
+
 
             driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
 
-            driver.Url = "https://www.facebook.com/szkolamlodegoprogramisty/settings/?tab=people_and_other_pages&ref=page_edit";
-
-            IWebElement ListOfFuns = driver.FindElement(By.XPath("//*[@id='u_0_u']/div/div/div/div[3]/div/div[2]/table/tbody"));
+            driver.Url = "https://www.facebook.com/szkolamlodegoprogramisty/settings/?tab=people_and_other_pages&ref=page_edit&cquick=jsc_c_l&cquick_token=AQ5ywqAW6TB0YqbF3e8&ctarget=https%3A%2F%2Fwww.facebook.com";
             driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-            IList<IWebElement> record;
+            listOfUsers = driver.FindElements(By.TagName("td"));
 
-            record = ListOfFuns.FindElements(By.TagName("tr"));
+            do
+            {
+                try
+                {
+
+                    IJavaScriptExecutor js = (IJavaScriptExecutor)driver;
+                    js.ExecuteScript("window.scrollBy(0,document.body.scrollHeight)");
+
+                    listOfUsers = driver.FindElements(By.TagName("tr"));
+
+                }
+                catch
+                {
+                    //Console.WriteLine("Brak rozszerzonej listy");
+                }
+
+                Actions hover = new Actions(driver);
+                IWebElement person = listOfUsers[index];
+
+                hover.MoveToElement(person);
+                hover.Perform();
+
+
+                try
+                {
+                    string nameValue = person.FindElement(By.CssSelector("a")).Text;
+                    string idValue = person.FindElement(By.CssSelector("a")).GetAttribute("href");
+
+                    if (!string.IsNullOrEmpty(nameValue))
+                    {
+                        FirstName = nameValue.Substring(0, nameValue.IndexOf(" "));
+                        LastName = nameValue.Substring(nameValue.IndexOf(" ") + 1, (nameValue.Length - FirstName.Length - 1));
+                        
+                    }
+
+                    if (!string.IsNullOrEmpty(idValue))
+                    {
+                        var start = idValue.IndexOf(".com/") + 5;
+                        id = idValue.Substring(start, idValue.Length - start);
+                    }
+
+                    if (!string.IsNullOrEmpty(nameValue) && !string.IsNullOrEmpty(idValue))
+                    {
+
+                        var context = new FBContext();
+                        var current = context.Users.FirstOrDefault(e => e.FbID == id);
+
+                        if (current != null)
+                        {
+                            current.PageLiked = true;
+                            Console.WriteLine("Aktualizacja: " + index + " " + FirstName + " " + LastName);
+                            context.SaveChanges();
+                        }
+                        else
+                        {
+                            User user = new User();
+                            user.FirstName = FirstName;
+                            user.LastName = LastName;
+                            user.FbID = id;
+                            user.ContactInitiated = false;
+                            user.PageLiked = true;
+                            user.IsFriend = false;
+                            user.SharedInfo = false;
+                            context.Users.Add(user);
+                            Console.WriteLine("Dodawanie: " + index + " " + FirstName + " " + LastName);
+                            context.SaveChanges();
+                        }
+
+
+
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+
+                    // Console.WriteLine(ex.ToString());          
+                }
+
+                index++;
+            } while (index < 2000);
 
         }
 
-        public void AddToFriend()
+        
+
+        public void AskForSharing()
         {
 
+
+            var context = new FBContext();
             driver = new ChromeDriver(Directory.GetCurrentDirectory(), option);
 
-            driver.Url = "https://www.facebook.com/groups/503657533808113/members/";
+            List<User> users = context.Users.Where(u => u.PageLiked == true && u.SharedInfo == false).Take(6).ToList();
 
-            //IWebElement ListOfFuns = driver.FindElement(By.XPath("//*[@id='u_0_u']/div/div/div/div[3]/div/div[2]/table/tbody"));
-            //driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-            //IList<IWebElement> record;
+            foreach (var user in users)
+            {
 
-            //record = ListOfFuns.FindElements(By.TagName("tr"));
+                driver.Url = ConfigurationManager.AppSettings["UserMessage"] + user.FbID;
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
 
+                string message = "Cześć " + user.FirstName + Environment.NewLine +
+                "dzięki za polubienie strony Szkoły Młodego Programisty. Jeżeli uważasz że to co robię jest" + Environment.NewLine +
+                "wartościowe prośba o udostępnienie by inne osoby mogły skorzystać z publikowanych" + Environment.NewLine +
+                "materiałów." + Environment.NewLine +
+                Environment.NewLine +
+                "Ostatnio odświeżyłem darmowy kurs scratcha i pythona. Fajnie gdyby trafił do dzieci które" + Environment.NewLine +
+                "rozpoczynają przygodę z programowaniem." + Environment.NewLine +
+                Environment.NewLine +
+                "Aby udostępnić wystarczy wejść na stronę " + Environment.NewLine +
+                Environment.NewLine +
+                "https://www.facebook.com/watch/?v=592154964897479" + Environment.NewLine +
+                Environment.NewLine +
+                "I kliknąć 'udostępnij' ze słowem miłego komentarza ;)" + Environment.NewLine +
+                Environment.NewLine +
+                "Jeżeli mogę Ci jakoś pomóc to też proszę daj znać" + Environment.NewLine +
+                Environment.NewLine +
+                "Bardzo dziękuję Ci za wsparcie i zaufanie" + Environment.NewLine +
+                "Pozdrawiam" + Environment.NewLine +
+                "Tomek";
+                Thread.Sleep(3000);
+                try
+                {
+                    string alert = driver.SwitchTo().Alert().Text;
+                    driver.SwitchTo().Alert().Accept();
+                    Console.WriteLine(alert);
+                }
+                catch
+                {
+                   // Console.WriteLine("Brak alertow");
+                }
+                IWebElement communication = driver.FindElement(By.CssSelector("div[class='_1mf _1mj']"));
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+                var clipboard = new Clipboard();
+                clipboard.SetText(message);
+                communication.SendKeys(Keys.Control + "v");
+
+                Thread.Sleep(3000);
+                communication.SendKeys(Keys.Enter);
+
+                driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+
+                user.SharedInfo = true;
+                context.SaveChanges();
+
+                
+                
+               Console.WriteLine("Informacja o udostępnianiu wysłana: " + user.FirstName + " " + user.LastName);
+
+
+            }
+
+            driver.Quit();
         }
 
     }

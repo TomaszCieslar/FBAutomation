@@ -14,16 +14,16 @@ namespace FBAutomation.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.5")
+                .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "5.0.1");
 
             modelBuilder.Entity("FBAutomation.Models.Assigment", b =>
                 {
                     b.Property<int>("AssigmentID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<int>("GroupID")
                         .HasColumnType("int");
@@ -45,7 +45,7 @@ namespace FBAutomation.Migrations
                     b.Property<int>("GroupID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<string>("FbGroupID")
                         .HasColumnType("nvarchar(max)");
@@ -63,7 +63,7 @@ namespace FBAutomation.Migrations
                     b.Property<int>("ID")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .UseIdentityColumn();
 
                     b.Property<bool>("ContactInitiated")
                         .HasColumnType("bit");
@@ -81,6 +81,9 @@ namespace FBAutomation.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PageLiked")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("SharedInfo")
                         .HasColumnType("bit");
 
                     b.HasKey("ID");
@@ -101,6 +104,20 @@ namespace FBAutomation.Migrations
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Group");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("FBAutomation.Models.Group", b =>
+                {
+                    b.Navigation("Assigments");
+                });
+
+            modelBuilder.Entity("FBAutomation.Models.User", b =>
+                {
+                    b.Navigation("Assigments");
                 });
 #pragma warning restore 612, 618
         }

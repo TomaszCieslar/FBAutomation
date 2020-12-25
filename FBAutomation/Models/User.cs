@@ -16,6 +16,8 @@ namespace FBAutomation.Models
 
         public Boolean IsFriend { get; set; }
 
+        public Boolean SharedInfo { get; set; }
+
         public string FbID { get; set; }
 
         public virtual ICollection<Assigment> Assigments { get; set; }

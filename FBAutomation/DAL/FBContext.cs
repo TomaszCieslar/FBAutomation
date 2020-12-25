@@ -17,7 +17,7 @@ namespace FBAutomation.DAL
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Server=.\SQLEXPRESS;Database=FaceBookDB;Trusted_Connection=True;");
+            optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=FaceBookDB;Trusted_Connection=True;");
         }
       
     }
